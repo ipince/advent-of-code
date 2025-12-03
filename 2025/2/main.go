@@ -16,11 +16,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// fmt.Println(output)
-	// output, err = solve2(string(input))
-	// if err != nil {
-	// 	panic(err)
-	// }
 	fmt.Println(output)
 }
 
