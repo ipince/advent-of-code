@@ -17,11 +17,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// fmt.Println(output)
-	// output, err = solve2(string(input))
-	// if err != nil {
-	// 	panic(err)
-	// }
 	fmt.Println(output)
 }
 
@@ -38,7 +33,7 @@ func solve1(input string) (int, error) {
 
 func maxJolt1(bank string) int {
 	maxJolt := 0
-	fmt.Printf("bank is %s\n", bank)
+	// fmt.Printf("bank is %s\n", bank)
 	for i := range bank {
 		for j := i + 1; j < len(bank); j++ {
 			// fmt.Printf("checking pos %d %c and pos %d %c\n", i, bank[i], j, bank[j])
@@ -57,70 +52,33 @@ func solve2(input string) (int, error) {
 	joltSum := 0
 	for _, bankStr := range lines {
 
-		// find the largest digit. if multiple, find the first instance
-		// map[int] -> []int (positions)
-		// then, go from 9 -> 0, find first position of first digit, use it.
-		// we can be greedy in this way.
-		// then, find next highest, but with strictly higher position
-		// if we make it to 12 digits, that's it.
-		// if we don't, then we have to start again, but with a lower first digit.
-
 		// first, preprocess bank and build map
 		bank := []int{}
-		digits := map[int][]int{} // <- in increasing order
-		maxSeen := 0
 		for pos := range bankStr {
 			digit, _ := strconv.Atoi(string(bankStr[pos]))
-			digits[digit] = append(digits[digit], pos)
 			bank = append(bank, digit)
-			maxSeen = int(math.Max(float64(maxSeen), float64(digit)))
-		}
-		positions := []int{}
-		for _, d := range []int{9, 8, 7, 6, 5, 4, 3, 2, 1, 0} {
-			positions = append(positions, digits[d]...)
 		}
 
+		// build maxes from the right side to the left side
+		// maxes[pos] -> max jolt of each length, starting from pos
+		// for example, if maxes[13][3] = 253,
+		// it means that 253 is the max jolt we've seen when using 3 batteries, starting from the 13th onwards
 		maxes := map[int]map[int]int{}
-		for i, _ := range bank {
+		for i := range bank {
 			fillMaxes(bank, maxes, len(bank)-i-1, 12)
 		}
-
-		fmt.Printf("map for %s is:\n%v\n", bankStr, digits)
-		fmt.Printf("int bank is: %v; positions are: %v\n", bank, positions)
 
 		mJolt1 := maxJolt1(bankStr)
 		mJolt2 := maxes[0][12]
 		fmt.Printf("max jolt for %s\n  method 1: %d\n  method 2: %d\n", bankStr, mJolt1, mJolt2)
 
 		joltSum += mJolt2
-
-		// now, attempt to build starting from top digits
-		// firstDigit := maxSeen
-		// for {
-		// 	mJolt, found := maxJolt(digits, firstDigit, 12)
-		// 	if found {
-		// 		// mJolt1 := maxJolt1(bank)
-		// 		// if mJolt != mJolt1 {
-		// 		// 	fmt.Printf("max jolt for %s\n  method 1: %d\n  method 2: %d\n", bank, mJolt1, mJolt)
-		// 		// }
-		// 		joltSum += mJolt
-		// 		break
-		// 	} else {
-		// 		firstDigit-- // should never get to 0
-		// 	}
-		// }
-
-		// break
 	}
 
 	return joltSum, nil
 }
 
 func fillMaxes(bank []int, maxes map[int]map[int]int, pos int, upto int) {
-	// build maxes from the right side to the left side
-	// maxes[pos] -> max int of each length, starting from pos
-	// for example, if maxes[13][3] = 253,
-	// it means that 253 is the max jolt we've seen when using 3 batteries, starting from the 13th onwards
 	// fmt.Printf("filling for pos %d, maxes are: %v\n", pos, maxes)
 
 	if _, ok := maxes[pos]; !ok {
@@ -143,66 +101,4 @@ func fillMaxes(bank []int, maxes map[int]map[int]int, pos int, upto int) {
 
 func intMax(a, b int) int {
 	return int(math.Max(float64(a), float64(b)))
-}
-
-func maxJoltRecursive(bank []int, positions []int, minPos int, batts int) int {
-	for _, pos := range positions {
-		if pos >= minPos {
-			if batts == 1 {
-				fmt.Printf("picking %d\n", bank[pos])
-				return bank[pos]
-			} else {
-				return (10^batts)*bank[pos] + maxJoltRecursive(bank, positions, pos+1, batts-1)
-			}
-		}
-	}
-
-	fmt.Println("NOT POSSIBRRRR")
-	return 0 // not possible
-}
-
-func maxJolt(digits map[int][]int, firstDigit int, numBatteries int) (int, bool) {
-	chosen := []int{}
-	minPos := 0
-	maxDigit := firstDigit
-	for {
-		if len(digits[maxDigit]) > 0 {
-			fmt.Printf("chosen so far: %v; minPos: %d; maxDigit: %d\n", chosen, minPos, maxDigit)
-			found := false
-			for _, pos := range digits[maxDigit] {
-				if pos >= minPos {
-					chosen = append(chosen, maxDigit)
-					minPos = pos + 1
-					found = true
-					break
-				}
-			}
-
-			if !found {
-				// no more maxDigits left to use, continue with maxDigits-1, unless we're at 0
-				maxDigit--
-				if maxDigit < 0 {
-					return 0, false // no jolt found for numBatteries and firstDigit
-				}
-			} else { // we added a digit to the chosen ones
-				if len(chosen) == numBatteries { // we're done
-					joltStr := ""
-					for _, d := range chosen {
-						joltStr += strconv.Itoa(d)
-					}
-					maxJolt, _ := strconv.Atoi(joltStr)
-					return maxJolt, true
-				} else {
-					// continue to add, but now maxDigit is 9 again
-					maxDigit = 9
-				}
-			}
-		} else { // no more options left
-			// no more maxDigits left to use, continue with maxDigits-1, unless we're at 0
-			maxDigit--
-			if maxDigit < 0 {
-				return 0, false // no jolt found for numBatteries and firstDigit
-			}
-		}
-	}
 }
