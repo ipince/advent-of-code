@@ -124,20 +124,4 @@ func allFresh(ranges []Range) int {
 	}
 
 	return switches[len(switches)-1].mark - count
-
-	// fmt.Println("sorted")
-	// print(ranges)
-
-	// // TODO: maybe remove fully-contained ranges
-	// // TODO: maybe expand overlapping ranges
-
-	// // first, brute force
-	// count := 0
-	// for i := range ranges[len(ranges)-1].max + 1 { // from 0 to last max, inclusive
-	// 	if isFresh(ranges, i) {
-	// 		count++
-	// 	}
-	// }
-
-	// return count
 }
