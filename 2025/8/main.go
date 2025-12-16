@@ -119,30 +119,3 @@ func solve1(input string, conns int, numCircuits int) (int, error) {
 
 	return total, nil
 }
-
-func solve2(input string) (int, error) {
-	lines := strings.Split(input, "\n")
-
-	numPaths := map[int]int{} // number of paths to end up at each column position
-	for i, line := range lines {
-		fmt.Printf("processing line %d out of %d\n", i, len(lines))
-		for j, cell := range line {
-			if string(cell) == "S" {
-				numPaths[j] = 1
-			}
-
-			if string(cell) == "^" {
-				numPaths[j-1] += numPaths[j]
-				numPaths[j+1] += numPaths[j]
-				numPaths[j] = 0
-			}
-		}
-	}
-
-	total := 0
-	for _, num := range numPaths {
-		total += num
-	}
-
-	return total, nil
-}
